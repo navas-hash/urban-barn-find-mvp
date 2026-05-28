@@ -9,12 +9,12 @@ import os
 # ============================================================
 st.set_page_config(
     page_title="Urban Barn Find | Investor Dashboard",
-    page_icon="🍏",
+    page_icon="🚗",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# CSS Minimalista / Light Theme / Responsivo
+# CSS Minimalista / Light Theme Premium
 st.markdown("""
     <style>
     /* Fundo Off-white e tipografia limpa */
@@ -41,106 +41,115 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 2. CARREGAMENTO E LIMPEZA DOS DADOS (FILTRO ANTI-ERRO)
+# 2. CARREGAMENTO COM FALLBACK DE PREVIEW AUTOMÁTICO
 # ============================================================
 @st.cache_data
 def carregar_dados():
     csv_path = "achados.csv"
-    if os.path.exists(csv_path):
-        df = pd.read_csv(csv_path)
-        
-        # FILTRO SILENCIOSO: Remove qualquer linha que seja Erro de API da OpenAI
-        if 'Modelo_IA' in df.columns:
-            df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
-        if 'Evidencia_Visual' in df.columns:
-            df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
-        
-        # TRATAMENTO DE IMAGEM: Arruma o caminho da foto para o Streamlit ler a pasta local
-        if 'Arquivo_Foto' in df.columns:
-            # Troca o caminho do Colab pelo caminho relativo da pasta do GitHub
-            df['Caminho_Limpo'] = df['Arquivo_Foto'].apply(
-                lambda x: str(x).split('/')[-1] if pd.notna(x) else ""
-            )
-            df['Foto_Exibicao'] = "fotos/" + df['Caminho_Limpo']
-            
-        return df, "Dados Oficiais de Campo"
     
-    return pd.DataFrame(), "Aguardando Sincronização..."
+    # Se o arquivo existir no GitHub, tenta validar os dados reais
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+            # Remove linhas de erros da OpenAI para proteger o layout
+            if 'Modelo_IA' in df.columns:
+                df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
+            if 'Evidencia_Visual' in df.columns:
+                df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
+            
+            # Se tiver dados reais válidos pós-filtro, usa eles!
+            if not df.empty:
+                if 'Arquivo_Foto' in df.columns:
+                    df['Caminho_Limpo'] = df['Arquivo_Foto'].apply(lambda x: str(x).split('/')[-1] if pd.notna(x) else "")
+                    df['Foto_Valida'] = "fotos/" + df['Caminho_Limpo']
+                else:
+                    df['Foto_Valida'] = None
+                return df, "Dados Oficiais de Campo (Produção)"
+        except:
+            pass
+
+    # SE ESTIVER VAZIO OU SEM ARQUIVO: Entra o Mágico de Oz com imagens reais da web para o Preview
+    dados_mock = {
+        "Bairro": ["Água Verde", "Água Verde", "Água Verde"],
+        "Latitude": [-25.4542, -25.4610, -25.4495],
+        "Longitude": [-49.2854, -49.2912, -49.2789],
+        "Rua_Imovel": ["Rua Bispo Dom José", "Rua José Cadilhe", "Av. República Argentina"],
+        "Numero_Imovel": [2061, 777, 1420],
+        "Marca": ["Volkswagen", "Chevrolet", "Ford"],
+        "Modelo_IA": ["Fusca 1300", "Opala Comodoro", "Maverick V8"],
+        "Evidencia_Visual": [
+            "Lanternas traseiras redondas, para-choques cromados lâmina única e vincos originais de capô.",
+            "Grade frontal larga com filetes horizontais, coluna C larga típica de cupê e calotas cromadas.",
+            "Capô longo com vincos pronunciados, traseira fastback clássica e grade em colmeia."
+        ],
+        "Lona": ["Não", "Não", "Sim"],
+        # Fotos reais do Unsplash para testarmos a coluna de imagem agora mesmo!
+        "Foto_Valida": [
+            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=150", 
+            "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=150",
+            "https://images.unsplash.com/photo-1617469767053-d3b508a0d1e5?w=150"
+        ]
+    }
+    return pd.DataFrame(dados_mock), "Modo Demonstração (Ambiente de Homologação)"
 
 df, status = carregar_dados()
 
 # ============================================================
-# 3. INTERFACE DO PAINEL (CABEÇALHO E MÉTRICAS)
+# 3. INTERFACE PRINCIPAL
 # ============================================================
 st.title("Urban Barn Find")
-st.caption(f"Status do Motor: **{status}** | Bairro Alvo: Água Verde, Curitiba")
+st.caption(f"Status do Sistema: **{status}** | Região Alvo: Curitiba, PR")
 st.markdown("<br>", unsafe_allow_html=True)
 
-if not df.empty:
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric(label="Propriedades Analisadas", value="400+")
-    with col2:
-        st.metric(label="Ativos Raros Encontrados", value=f"{len(df)}")
-    with col3:
-        lonas = len(df[df["Lona"] == "Sim"]) if "Lona" in df.columns else 0
-        st.metric(label="Veículos Ocultos (Lona)", value=f"{lonas}")
+# Bloco de Métricas KPI
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric(label="Propriedades Varridas", value="400+", delta="Foco Comercial")
+with col2:
+    st.metric(label="Ativos Confirmados por IA", value=f"{len(df)}")
+with col3:
+    lonas = len(df[df["Lona"].str.lower() == "sim"]) if "Lona" in df.columns else 0
+    st.metric(label="Veículos Sob Lona", value=f"{lonas}", delta="Visão Computacional")
 
-    st.markdown("---")
+st.markdown("---")
 
-    # ============================================================
-    # 4. MAPA TÁTICO
-    # ============================================================
-    st.subheader("Radar de Ativos")
+# Mapa Interativo
+st.subheader("Radar de Oportunidades")
+centro_lat = df.iloc[0]["Latitude"] if not df.empty else -25.4542
+centro_lon = df.iloc[0]["Longitude"] if not df.empty else -49.2854
+mapa = folium.Map(location=[centro_lat, centro_lon], zoom_start=14, tiles="CartoDB positron")
+
+for _, row in df.iterrows():
+    icone = "eye-slash" if row.get("Lona") == "Sim" else "car"
+    cor = "black" if row.get("Lona") == "Sim" else "blue"
     
-    # Pega o centro do mapa baseado no primeiro carro achado
-    centro_lat = df.iloc[0]["Latitude"] if pd.notna(df.iloc[0]["Latitude"]) else -25.4542
-    centro_lon = df.iloc[0]["Longitude"] if pd.notna(df.iloc[0]["Longitude"]) else -49.2854
-    
-    mapa = folium.Map(location=[centro_lat, centro_lon], zoom_start=15, tiles="CartoDB positron")
+    folium.Marker(
+        location=[row["Latitude"], row["Longitude"]],
+        popup=f"<b>{row.get('Marca', '')} {row.get('Modelo_IA', '')}</b><br>{row.get('Rua_Imovel', '')}, nº {row.get('Numero_Imovel', '')}",
+        icon=folium.Icon(color=cor, icon=icone, prefix='fa')
+    ).add_to(mapa)
 
-    for _, row in df.iterrows():
-        if pd.notna(row["Latitude"]) and pd.notna(row["Longitude"]):
-            icone = "eye-slash" if row.get("Lona") == "Sim" else "car"
-            cor = "black" if row.get("Lona") == "Sim" else "blue"
-            
-            folium.Marker(
-                location=[row["Latitude"], row["Longitude"]],
-                popup=folium.Popup(f"<b>{row.get('Marca', '')} {row.get('Modelo_IA', '')}</b><br>{row.get('Rua_Imovel', '')}, {row.get('Numero_Imovel', '')}", max_width=250),
-                icon=folium.Icon(color=cor, icon=icone, prefix='fa')
-            ).add_to(mapa)
+folium_static(mapa, width=1200, height=450)
 
-    folium_static(mapa, width=1200, height=500)
+st.markdown("---")
 
-    st.markdown("---")
+# Tabela Pericial de Evidências com Miniaturas de Imagem
+st.subheader("Laudos Periciais Estruturados (GPT-4o Vision)")
 
-    # ============================================================
-    # 5. LAUDOS COM FOTOS REAIS (DATA EDITOR DO STREAMLIT)
-    # ============================================================
-    st.subheader("Evidências Periciais (GPT-4o Vision)")
-    
-    # Verifica se a pasta fotos existe e se o arquivo está nela para não quebrar o site
-    df['Foto_Valida'] = df['Foto_Exibicao'].apply(lambda x: x if os.path.exists(x) else None)
-    
-    colunas_exibicao = ["Foto_Valida", "Marca", "Modelo_IA", "Rua_Imovel", "Numero_Imovel", "Evidencia_Visual", "Lona"]
-    df_tabela = df[[c for c in colunas_exibicao if c in df.columns]].copy()
-    
-    # Exibe a tabela com a coluna de imagem renderizada magicamente
-    st.dataframe(
-        df_tabela,
-        column_config={
-            "Foto_Valida": st.column_config.ImageColumn("Foto de Campo", help="Captura do Google Street View"),
-            "Marca": "Fabricante",
-            "Modelo_IA": "Modelo",
-            "Rua_Imovel": "Logradouro",
-            "Numero_Imovel": "Nº",
-            "Evidencia_Visual": "Laudo da IA",
-            "Lona": "Sob Lona?"
-        },
-        use_container_width=True,
-        hide_index=True,
-        height=400
-    )
+colunas_exibicao = ["Foto_Valida", "Marca", "Modelo_IA", "Rua_Imovel", "Numero_Imovel", "Evidencia_Visual", "Lona"]
+df_tabela = df[[c for c in colunas_exibicao if c in df.columns]]
 
-else:
-    st.info("Nenhum ativo detectado ainda ou aguardando upload do arquivo achados.csv.")
+st.dataframe(
+    df_tabela,
+    column_config={
+        "Foto_Valida": st.column_config.ImageColumn("Foto de Campo", help="Recorte visual feito pela Lente Sniper"),
+        "Marca": "Fabricante",
+        "Modelo_IA": "Modelo Identificado",
+        "Rua_Imovel": "Logradouro",
+        "Numero_Imovel": "Nº",
+        "Evidencia_Visual": "Análise de Evidências Visuais",
+        "Lona": "Oculto?"
+    },
+    use_container_width=True,
+    hide_index=True
+)

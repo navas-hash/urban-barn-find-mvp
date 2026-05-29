@@ -222,7 +222,7 @@ hr { border-color: #181830 !important; margin: 1.5rem 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── TRANFORMAÇÃO DE FOTO PARA BASE64 (SISTEMA INTEGRADO) ─────────────────────
+# ─── TRANFORMAÇÃO DE FOTO PARA BASE64 ─────────────────────────────────────────
 def carregar_imagem_base64(caminho_csv):
     if pd.isna(caminho_csv):
         return ""
@@ -237,21 +237,19 @@ def carregar_imagem_base64(caminho_csv):
             return ""
     return ""
 
-# ─── DATA LOADER REFEITO PAR COMPATIBILIDADE DE INFRAESTRUTURA ────────────────
+# ─── DATA LOADER REFEITO PARA COMPATIBILIDADE ─────────────────────────────────
 def carregar_dados():
     csv_path = "achados.csv"
     if os.path.exists(csv_path):
         try:
             df = pd.read_csv(csv_path)
             
-            # FILTRO ANTI-ERROS OPENAI (Proteção de Interface)
             if 'Modelo_IA' in df.columns:
                 df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
             if 'Evidencia_Visual' in df.columns:
                 df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
-            
+                
             if not df.empty:
-                # ADAPTAÇÃO GEOGRÁFICA DE VARIÁVEIS (Se o Colab não gerou, criamos dinamicamente)
                 if "Bairro" not in df.columns:
                     df["Bairro"] = "Água Verde"
                 if "Decada" not in df.columns:
@@ -261,7 +259,6 @@ def carregar_dados():
                 if "Link_Google_Maps" not in df.columns:
                     df["Link_Google_Maps"] = df.apply(lambda r: f"https://www.google.com/maps/search/?api=1&query={str(r.get('Latitude',''))},{str(r.get('Longitude',''))}", axis=1)
                 
-                # Sincronização binária de fotos locais
                 if 'Arquivo_Foto' in df.columns:
                     df['Foto_Base64'] = df['Arquivo_Foto'].apply(carregar_imagem_base64)
                 else:
@@ -270,27 +267,20 @@ def carregar_dados():
         except:
             pass
 
-    # Fallback idêntico ao mock do Claude caso o arquivo falhe
     dados_mock = {
-        "Bairro":          ["Água Verde", "Água Verde", "Água Verde", "Água Verde"],
-        "Latitude":        [-25.4542, -25.4610, -25.4495, -25.4578],
-        "Longitude":       [-49.2854, -49.2912, -49.2789, -49.2831],
-        "Rua_Imovel":      ["Rua Bispo Dom José", "Rua José Cadilhe", "Av. República Argentina", "Rua Bento Viana"],
-        "Numero_Imovel":   [2061, 777, 1420, 550],
-        "Classe_Roboflow": ["fusca", "carros-antigos", "kombi", "carros-antigos"],
-        "Marca":           ["Volkswagen", "Chevrolet", "Volkswagen", "Ford"],
-        "Modelo_IA":       ["Fusca 1300", "Opala Comodoro", "Kombi Corujinha", "Maverick V8"],
-        "Decada":          ["1970s", "1980s", "1960s", "1970s"],
-        "Evidencia_Visual": [
-            "Lanternas traseiras redondas (Fafá), para-choques cromados lâmina única e vincos originais de capô.",
-            "Grade frontal larga com filetes horizontais, coluna C larga típica de cupê e calotas cromadas originais.",
-            "Pintura saia-e-blusa original, para-brisa bipartido e setas 'orelinha' funcionais.",
-            "Capô longo com vincos pronunciados, traseira fastback e grade em colmeia original com emblema."
-        ],
-        "Lona":            ["Nao", "Nao", "Sim", "Nao"],
-        "Link_Google_Maps": ["#", "#", "#", "#"],
-        "Alerta_Fachada":  ["Limpo", "Limpo", "Limpo", "Limpo"],
-        "Foto_Base64":     ["", "", "", ""]
+        "Bairro":          ["Água Verde", "Água Verde"],
+        "Latitude":        [-25.4542, -25.4610],
+        "Longitude":       [-49.2854, -49.2912],
+        "Rua_Imovel":      ["Rua Bispo Dom José", "Rua José Cadilhe"],
+        "Numero_Imovel":   [2061, 777],
+        "Marca":           ["Volkswagen", "Chevrolet"],
+        "Modelo_IA":       ["Fusca 1300", "Opala Comodoro"],
+        "Decada":          ["1970s", "1980s"],
+        "Evidencia_Visual": ["Lanternas redondas.", "Grade larga."],
+        "Lona":            ["Nao", "Nao"],
+        "Link_Google_Maps": ["#", "#"],
+        "Alerta_Fachada":  ["Limpo", "Limpo"],
+        "Foto_Base64":     ["", ""]
     }
     return pd.DataFrame(dados_mock), False
 
@@ -300,7 +290,7 @@ total_lonas    = len(df[df["Lona"].astype(str).str.lower() == "sim"]) if "Lona" 
 taxa_deteccao  = f"{total_achados / 400 * 100:.1f}%"
 modo_label     = "Dados reais de campo" if dados_reais else "Demonstração Homologada"
 
-# ─── SIDEBAR (CLAUDE ORIGINAL) ────────────────────────────────────────────────
+# ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(f"""
     <div style="padding: 22px 4px 10px;">
@@ -318,11 +308,11 @@ with st.sidebar:
     </div>
     <div class="pitch-item">
         <div class="pitch-label">📊 Mercado Endereçável</div>
-        <div class="pitch-text">Mercado global de veículos clássicos: <strong>USD 34 bilhões</strong> (2024). Brasil: <strong>1.2M unidades</strong> registrada de coleção.</div>
+        <div class="pitch-text">Mercado global de veículos clássicos: <strong>USD 34 bilhões</strong> (2024). Brasil: <strong>1.2M unidades</strong>.</div>
     </div>
     <div class="pitch-item">
         <div class="pitch-label">🔬 Moat Tecnológico</div>
-        <div class="pitch-text">Modelo YOLO proprietário treinado em <strong>12.000+ imagens</strong>. Cruzamento shapefile IPPUC garante alvo em imóvel <strong>privado</strong>.</div>
+        <div class="pitch-text">Modelo YOLO proprietário treinado em <strong>12.000+ imagens</strong>. Cruzamento shapefile IPPUC garante alvo em imóvel privado.</div>
     </div>
     <div class="pitch-item">
         <div class="pitch-label">⚡ Eficiência Operacional</div>
@@ -347,11 +337,10 @@ with st.sidebar:
         <div class="sb-stat-sub">Veículos filtrados por IA</div>
     </div>
     """, unsafe_allow_html=True)
-
     st.markdown('<div class="sb-divider"></div>', unsafe_allow_html=True)
     st.selectbox("Bairro", ["Todos", "Água Verde"], label_visibility="collapsed")
 
-# ─── HERO (CLAUDE ORIGINAL) ───────────────────────────────────────────────────
+# ─── HERO ─────────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <div class="hero">
     <div class="live-badge"><div class="live-dot"></div>Sistema Ativo · Varrendo Curitiba</div>
@@ -366,7 +355,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ─── KPI CARDS (CLAUDE ORIGINAL) ──────────────────────────────────────────────
+# ─── KPI CARDS ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <div class="kpi-row">
     <div class="kpi-card">
@@ -410,7 +399,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ─── CHARTS (CLAUDE ORIGINAL DINÂMICO) ────────────────────────────────────────
+# ─── CHARTS ───────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="sec-head">
     <div class="sec-title">Inteligência de Mercado</div>
@@ -435,7 +424,6 @@ with col_c1:
     st.plotly_chart(fig_dec, use_container_width=True)
 
 with col_c2:
-    # FILTRO INTERNO DO GRÁFICO: Remove 'Desconhecido' APENAS da visualização gráfica para ficar limpo
     df_grafico_marcas = df[df["Marca"].astype(str).str.lower() != "desconhecido"]
     marca_counts = df_grafico_marcas["Marca"].value_counts()
     
@@ -506,7 +494,6 @@ for _, row in df.iterrows():
         'border-radius:100px;padding:3px 10px;font-size:10px;font-family:monospace;">● Visível</span>'
     )
 
-    # Injeção inteligente de imagem dentro do pop-up escuro do próprio mapa
     img_tag = f'<img src="{img_b64}" style="width:100%;height:130px;object-fit:cover;border-radius:8px;margin-bottom:12px;border:1px solid #1C1C38;">' if img_b64 else ''
 
     html_popup = f"""
@@ -564,47 +551,40 @@ for _, row in df.iterrows():
     alerta_badge = f'<span class="badge b-lona">⚠ {row["Alerta_Fachada"]}</span>' if row["Alerta_Fachada"] != "Limpo" else '<span class="badge b-ok">✓ Fachada Limpa</span>'
     img_b64      = row["Foto_Base64"]
 
-    # Bloco visual da foto injetada em Base64 no card original do Claude
-    imagem_html = f"""
-    <div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; overflow: hidden; border: 1px solid #1A1A32; background: #07070F;">
-        <img src="{img_b64}" style="width: 100%; height: 100%; object-fit: cover;">
-    </div>
-    """ if img_b64 else """
-    <div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #1A1A32; background: #0D0D20; font-family: monospace; font-size: 10px; color: #3A3A58;">
-        FOTO INDISPONÍVEL
-    </div>
-    """
+    imagem_html = f'<div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; overflow: hidden; border: 1px solid #1A1A32; background: #07070F;"><img src="{img_b64}" style="width: 100%; height: 100%; object-fit: cover;"></div>' if img_b64 else '<div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #1A1A32; background: #0D0D20; font-family: monospace; font-size: 10px; color: #3A3A58;">FOTO INDISPONÍVEL</div>'
 
-    st.markdown(f"""
-    <div class="asset-card" style="display: flex; gap: 24px; align-items: flex-start;">
-        {imagem_html}
-        <div style="flex-grow: 1;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-                <div>
-                    <div class="asset-name">{row['Marca']} {row['Modelo_IA']}</div>
-                    <div class="asset-loc">📍 {row['Rua_Imovel']}, nº {row['Numero_Imovel']}  ·  {row['Bairro']}</div>
-                </div>
-                <div style="padding-top:4px;">
-                    <span class="badge b-decade">{row['Decada']}</span>
-                    <span class="badge b-brand">{row['Marca']}</span>
-                    {lona_badge}
-                    {alerta_badge}
-                </div>
-            </div>
-            <div class="asset-evidence">{row['Evidencia_Visual']}</div>
-            <div class="asset-footer">
-                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#3A3A58;">
-                    {row['Latitude']:.5f}, {row['Longitude']:.5f}
-                </span>
-                <a href="{row['Link_Google_Maps']}" target="_blank" class="asset-link" style="font-family:'IBM Plex Mono',monospace;font-size:10px;">
-                    → Abrir no Google Maps
-                </a>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # ALINHAMENTO À ESQUERDA PARA EVITAR QUE O MARKDOWN CRIE UM BLOCO DE CÓDIGO
+    html_card = f"""
+<div class="asset-card" style="display: flex; gap: 24px; align-items: flex-start;">
+{imagem_html}
+<div style="flex-grow: 1;">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+<div>
+<div class="asset-name">{row['Marca']} {row['Modelo_IA']}</div>
+<div class="asset-loc">📍 {row['Rua_Imovel']}, nº {row['Numero_Imovel']}  ·  {row['Bairro']}</div>
+</div>
+<div style="padding-top:4px;">
+<span class="badge b-decade">{row['Decada']}</span>
+<span class="badge b-brand">{row['Marca']}</span>
+{lona_badge}
+{alerta_badge}
+</div>
+</div>
+<div class="asset-evidence">{row['Evidencia_Visual']}</div>
+<div class="asset-footer">
+<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#3A3A58;">
+{row['Latitude']:.5f}, {row['Longitude']:.5f}
+</span>
+<a href="{row['Link_Google_Maps']}" target="_blank" class="asset-link" style="font-family:'IBM Plex Mono',monospace;font-size:10px;">
+→ Abrir no Google Maps
+</a>
+</div>
+</div>
+</div>
+"""
+    st.markdown(html_card, unsafe_allow_html=True)
 
-# ─── EXPANSION PIPELINE (CLAUDE ORIGINAL) ─────────────────────────────────────
+# ─── EXPANSION PIPELINE ───────────────────────────────────────────────────────
 st.markdown("""
 <div class="sec-head" style="margin-top:44px;">
     <div class="sec-title">Pipeline de Expansão</div>
@@ -622,12 +602,12 @@ expansion = [
 for col, (bairro, lotes, semana, cor) in zip([col_e1, col_e2, col_e3, col_e4], expansion):
     with col:
         st.markdown(f"""
-        <div style="background:#0D0D20;border:1px solid #1A1A32;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:0;left:0;right:0;height:2px;background:{cor};opacity:.6;"></div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:{cor};opacity:.7;margin-bottom:8px;">{semana}</div>
-            <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#F0EDE8;margin-bottom:4px;">{bairro}</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A4A6A;">{lotes} · Curitiba</div>
-        </div>
-        """, unsafe_allow_html=True)
+<div style="background:#0D0D20;border:1px solid #1A1A32;border-radius:12px;padding:20px;position:relative;overflow:hidden;">
+<div style="position:absolute;top:0;left:0;right:0;height:2px;background:{cor};opacity:.6;"></div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:{cor};opacity:.7;margin-bottom:8px;">{semana}</div>
+<div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#F0EDE8;margin-bottom:4px;">{bairro}</div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A4A6A;">{lotes} · Curitiba</div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)

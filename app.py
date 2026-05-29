@@ -4,6 +4,7 @@ import folium
 from streamlit_folium import folium_static
 import plotly.express as px
 import os
+import base64
 
 # ============================================================
 # 1. CONFIGURAÇÃO DE PÁGINA & TEMA PREMIUM DARK GRAPHITE
@@ -15,21 +16,21 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS de Alta Costura para Dashboards Tech Modernos
+# Estilização de alto padrão para Dashboards de Fundos de Investimento
 st.markdown("""
     <style>
-    /* Fundo Grafite Profundo (Estilo Supabase/Vercel) */
+    /* Fundo Grafite Profundo Moderno */
     .stApp { background-color: #0B0F17; color: #F8FAFC; }
     
-    /* Títulos Elegantes e Minimalistas */
+    /* Títulos Elegantes */
     h1, h2, h3, h4 { 
         color: #F8FAFC !important; 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
         font-weight: 600 !important;
         letter-spacing: -0.5px;
     }
     
-    /* Cartões de Métricas Minimalistas */
+    /* Cartões de Métricas Estilo KPI */
     div[data-testid="metric-container"] {
         background-color: #111827;
         border: 1px solid #1F2937;
@@ -37,13 +38,13 @@ st.markdown("""
         padding: 18px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
-    div[data-testid="stMetricValue"] { color: #38BDF8 !important; font-size: 32px !important; font-weight: 700; }
+    div[data-testid="stMetricValue"] { color: #0EA5E9 !important; font-size: 32px !important; font-weight: 700; }
     div[data-testid="stMetricLabel"] { color: #9CA3AF !important; font-size: 12px !important; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    /* Linha divisória sutil */
+    /* Linha divisória */
     hr { border-top: 1px solid #1F2937 !important; margin: 28px 0; }
     
-    /* Tabela Estilo Banco de Dados Premium */
+    /* Dataframe customizado */
     .stDataFrame { 
         border: 1px solid #1F2937; 
         border-radius: 12px; 
@@ -54,39 +55,56 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 2. MOTOR DE DADOS TRATADOS E FILTRADOS
+# 2. MOTOR DE CONVERSÃO BINÁRIA DE IMAGEM (BASE64)
 # ============================================================
+def converter_foto_para_base64(caminho_original):
+    if pd.isna(caminho_original):
+        return None
+    
+    # Isola o nome exato do arquivo (ex: Fiat_147_Taruma_02185.jpg)
+    nome_arquivo = str(caminho_original).split('/')[-1].strip()
+    caminho_local = f"fotos/{nome_arquivo}"
+    
+    # Se a foto existir na pasta do GitHub, converte ela em código binário de imagem
+    if os.path.exists(caminho_local):
+        try:
+            with open(caminho_local, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode()
+            return f"data:image/jpeg;base64,{encoded_string}"
+        except:
+            return None
+    return None
+
 @st.cache_data
 def carregar_dados_periciais():
     csv_path = "achados.csv"
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         
-        # Limpeza bruta de logs de erro da API
+        # FILTRO ANTI-ERRO: Remove logs de falhas da API
         if 'Modelo_IA' in df.columns:
             df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
         if 'Evidencia_Visual' in df.columns:
             df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
             
-        # Ajuste de caminhos locais para exibição das imagens
+        # Executa a mágica de conversão das fotos
         if 'Arquivo_Foto' in df.columns:
-            df['Foto_Visual'] = df['Arquivo_Foto'].apply(
-                lambda x: f"fotos/{str(x).split('/')[-1].strip()}" if pd.notna(x) else None
-            )
+            df['Foto_Visual'] = df['Arquivo_Foto'].apply(converter_foto_para_base64)
+            
         return df
     return pd.DataFrame()
 
 df = carregar_dados_periciais()
 
 # ============================================================
-# 3. INTERFACE E ANALYTICS DE ALTO PADRÃO
+# 3. INTERFACE E GRÁFICOS
 # ============================================================
 st.title("Urban Barn Find")
 st.caption("Intelligence Platform · Real Estate & Automotive Asset Scoping · Curitiba, PR")
 st.markdown("<br>", unsafe_allow_html=True)
 
 if not df.empty:
-    # Métricas Estilo KPI de Finanças
+    # Métricas Comerciais
     total_varredura = 400
     confirmados = len(df)
     taxa_conversao = (confirmados / total_varredura) * 100
@@ -100,23 +118,21 @@ if not df.empty:
 
     st.markdown("---")
 
-    # MÓDULO ANÁLITICO REFEITO: Sumindo com o lixo visual do "Desconhecido"
+    # Analytics sem a barra de 'Desconhecidos'
     st.subheader("Análise de Distribuição do Inventário")
     col_g1, col_g2 = st.columns(2)
 
-    # Cor sofisticada: Azul Elétrico Suave (#0EA5E9) e Grafite Escuro (#1F2937)
     cor_principal = "#0EA5E9"
     cor_secundaria = "#1F2937"
 
     with col_g1:
-        # Gráfico de Barras FILTRADO: Remove 'Desconhecido' para focar nas marcas reais achadas
         if 'Marca' in df.columns:
             df_filtrado_marcas = df[df['Marca'].astype(str).str.lower() != 'desconhecido']
             df_marcas = df_filtrado_marcas['Marca'].value_counts().reset_index()
             
             fig_marcas = px.bar(
                 df_marcas, x='Marca', y='count',
-                title="Modelos Validados por Fabricante (Excluindo Omissões)",
+                title="Modelos Validados por Fabricante",
                 template="plotly_dark",
                 color_discrete_sequence=[cor_principal]
             )
@@ -128,17 +144,14 @@ if not df.empty:
             fig_marcas.update_xaxes(showgrid=False)
             fig_marcas.update_yaxes(showgrid=False)
             st.plotly_chart(fig_marcas, use_container_width=True, config={'displayModeBar': False})
-        else:
-            st.info("Dados de marcas indisponíveis para volumetria.")
 
     with col_g2:
-        # Gráfico de Pizza/Donut Limpo e Focado
         fig_lona = px.pie(
             df, names='Lona',
             title="Acessibilidade Visual do Ativo (Lona)",
             template="plotly_dark",
             hole=0.6,
-            color_discrete_sequence=[cor_secundaria, cor_principal]
+            color_discrete_sequence=[cor_secundaria, warm_colors:=cor_principal]
         )
         fig_lona.update_layout(
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
@@ -149,7 +162,7 @@ if not df.empty:
     st.markdown("---")
 
     # ============================================================
-    # 4. MAPA TÁTICO INTEGRADO (DARK MATTER)
+    # 4. MAPA TÁTICO
     # ============================================================
     st.subheader("📍 Disposição Geográfica dos Leads")
     
@@ -172,7 +185,7 @@ if not df.empty:
     st.markdown("---")
 
     # ============================================================
-    # 5. BANCO DE DADOS DE EVIDÊNCIAS
+    # 5. TABELA COM RENDERIZAÇÃO DIRETA VIA BINÁRIO
     # ============================================================
     st.subheader("📄 Relatório Pericial Estruturado")
     

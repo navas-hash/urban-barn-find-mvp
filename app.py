@@ -6,204 +6,164 @@ import plotly.express as px
 import os
 
 # ============================================================
-# 1. CONFIGURAÇÃO DE PÁGINA & DESIGN SYSTEM (APPLE HIG)
+# 1. CONFIGURAÇÃO DE PÁGINA & TEMA ORIGINAL DARK PREMIUM
 # ============================================================
 st.set_page_config(
-    page_title="Urban Barn Find",
-    page_icon="🍏",
+    page_title="Urban Barn Find | V12 Tactical",
+    page_icon="📡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# CSS para emular uma interface nativa de aplicativo Apple (Light Mode)
+# Injeção de CSS focada para NÃO quebrar a visibilidade das tabelas
 st.markdown("""
     <style>
-    /* Fundo Canvas da Apple e tipografia limpa do sistema */
-    .stApp {
-        background-color: #F5F5F7;
-        color: #1D1D1F;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Fundo Escuro Industrial */
+    .stApp { background-color: #0E1117; }
+    
+    /* Textos de Markdown e Parágrafos fora de tabelas em Branco */
+    .stMarkdown p, .stMarkdown span, caption { color: #FFFFFF !important; }
+    
+    /* Títulos em Azul Neon Hacker */
+    h1, h2, h3, h4 { 
+        color: #00D1FF !important; 
+        font-family: 'Courier New', monospace !important;
+        font-weight: 700 !important; 
     }
-
-    /* Títulos e subtítulos refinados */
-    h1, h2, h3 {
-        color: #1D1D1F !important;
-        font-weight: 600 !important;
-        letter-spacing: -0.5px;
-    }
-
-    /* Widgets de Métricas (Estilo Clean iOS) */
+    
+    /* Cartões das Métricas Originais */
     div[data-testid="metric-container"] {
-        background-color: #FFFFFF;
-        border: 1px solid #E5E5EA;
-        border-radius: 12px;
-        padding: 14px 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        background-color: #1A1C24;
+        border: 1px solid #2D2F39;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
-    div[data-testid="stMetricValue"] {
-        color: #1D1D1F !important;
-        font-size: 28px !important;
-        font-weight: 700 !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        color: #86868B !important;
-        font-size: 11px !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* Linhas divisórias elegantes e sutis */
-    hr {
-        border: 0;
-        border-top: 1px solid #D2D2D7;
-        margin: 24px 0;
-    }
-
-    /* Customização do Data Grid Industrial */
-    .stDataFrame {
-        border: 1px solid #E5E5EA;
-        border-radius: 12px;
-        background-color: #FFFFFF;
-        overflow: hidden;
-    }
+    div[data-testid="stMetricValue"] { color: #00D1FF !important; font-size: 36px !important; }
+    div[data-testid="stMetricLabel"] { color: #86868B !important; font-size: 12px !important; }
+    
+    /* Ajuste de Linha Divisória */
+    hr { border-top: 1px solid #2D2F39 !important; }
     </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 2. TRATAMENTO DE DADOS (FILTRO ANTI-ERRO & FOTOS)
+# 2. CARREGAMENTO E FILTRAGEM DE DADOS (FOCO EM FUNCIONAMENTO)
 # ============================================================
 @st.cache_data
-def carregar_dados_oficiais():
+def carregar_dados_blindados():
     csv_path = "achados.csv"
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
-
-        # Filtro Silencioso: Remove qualquer vestígio de erros de API
+        
+        # FILTRO ANTI-ERRO: Remove de forma invisível as linhas com falha 429 da API
         if 'Modelo_IA' in df.columns:
             df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
         if 'Evidencia_Visual' in df.columns:
             df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
-
-        # Ajuste Cirúrgico das Fotos: Isola o nome do arquivo e aponta para a pasta fotos/
+            
+        # CORREÇÃO DO CAMINHO DAS FOTOS: Remove caminhos do Colab e padroniza para o GitHub
         if 'Arquivo_Foto' in df.columns:
-            def ajustar_caminho_foto(caminho):
-                if pd.isna(caminho): return None
-                nome_foto = str(caminho).split('/')[-1]
-                return f"fotos/{nome_foto}"
-            df['Foto_Visual'] = df['Arquivo_Foto'].apply(ajustar_caminho_foto)
-
+            df['Foto_Visual'] = df['Arquivo_Foto'].apply(
+                lambda x: f"fotos/{str(x).split('/')[-1].strip()}" if pd.notna(x) else None
+            )
         return df
     return pd.DataFrame()
 
-df = carregar_dados_oficiais()
+df = carregar_dados_blindados()
 
 # ============================================================
-# 3. RENDERIZAÇÃO DA INTERFACE DO WEB APP
+# 3. INTERFACE E GRÁFICOS (A PERFUMARIA DO CLAUDE DE VOLTA)
 # ============================================================
-st.title("Urban Barn Find")
-st.caption("Mapeamento Geográfico Inteligente de Ativos Automotivos Raros · Curitiba, PR")
-st.markdown("<br>", unsafe_allow_html=True)
+st.title("📡 Urban Barn Find | V12 Tactical Dashboard")
+st.markdown("---")
 
 if not df.empty:
-    # --- MÓDULO 1: Indicadores Principais (Widgets iOS) ---
+    # 4 Cards de Métricas Originais
     total_varredura = 400
     confirmados = len(df)
     taxa_conversao = (confirmados / total_varredura) * 100
     total_lonas = int((df["Lona"].astype(str).str.lower() == "sim").sum()) if "Lona" in df.columns else 0
 
     m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric("Imóveis Analisados", f"{total_varredura}+")
-    with m2: st.metric("Alvos Confirmados", f"{confirmados}")
-    with m3: st.metric("Veículos Sob Lona", f"{total_lonas}")
-    with m4: st.metric("Taxa de Conversão", f"{taxa_conversao:.1f}%")
+    m1.metric("ALVOS VARRIDOS", f"{total_varredura}+")
+    m2.metric("CONFIRMADOS IA", f"{confirmados}")
+    m3.metric("VEÍCULOS SOB LONA", f"{total_lonas}")
+    m4.metric("RENDIMENTO EM CAMPO", f"{taxa_conversao:.1f}%")
 
-    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("---")
 
-    # --- MÓDULO 2: Analítico Discreto (Perfumaria Estilo Apple) ---
-    st.subheader("Indicadores de Distribuição")
+    # Bloco de Gráficos Originais (Lado a Lado)
+    st.subheader("📊 Volumetria e Estatísticas de Campo")
     col_g1, col_g2 = st.columns(2)
 
-    # Cores institucionais do ecossistema Apple
-    cor_apple_blue = "#0071E3"
-    cor_apple_gray = "#E5E5EA"
-
     with col_g1:
-        # Gráfico de Marcas Clean (Sem linhas de grade, fundo transparente)
         df_marcas = df['Marca'].value_counts().reset_index()
         fig_marcas = px.bar(
             df_marcas, x='Marca', y='count',
-            title="Volume por Fabricante",
-            template="plotly_white",
-            color_discrete_sequence=[cor_apple_blue]
+            title="Modelos Detectados por Fabricante",
+            template="plotly_dark",
+            color_discrete_sequence=['#00D1FF']
         )
-        fig_marcas.update_layout(
-            margin=dict(l=20, r=20, t=40, b=20), height=180,
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            font_family="-apple-system, BlinkMacSystemFont, sans-serif", font_color="#1D1D1F",
-            xaxis_title=None, yaxis_title=None
-        )
+        fig_marcas.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=240)
         fig_marcas.update_xaxes(showgrid=False)
         fig_marcas.update_yaxes(showgrid=False)
-        st.plotly_chart(fig_marcas, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig_marcas, use_container_width=True)
 
     with col_g2:
-        # Gráfico Donut de Lonas Clean (Estilo Widget Tempo de Tela)
         fig_lona = px.pie(
             df, names='Lona',
-            title="Status de Visibilidade (Veículos Ocultos)",
-            template="plotly_white", hole=0.6,
-            color_discrete_sequence=[cor_apple_gray, cor_apple_blue]
+            title="Proporção: Veículos Ocultos (Lona)",
+            template="plotly_dark",
+            hole=0.4,
+            color_discrete_sequence=['#2D2F39', '#00D1FF']
         )
-        fig_lona.update_layout(
-            margin=dict(l=20, r=20, t=40, b=20), height=180,
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            font_family="-apple-system, BlinkMacSystemFont, sans-serif", font_color="#1D1D1F"
-        )
-        st.plotly_chart(fig_lona, use_container_width=True, config={'displayModeBar': False})
+        fig_lona.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=240)
+        st.plotly_chart(fig_lona, use_container_width=True)
 
-    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("---")
 
-    # --- MÓDULO 3: Janela do Mapa (O Herói da Tela) ---
-    st.subheader("Visualização Espacial dos Ativos")
+    # ============================================================
+    # 4. MAPA TÁTICO (MODO NOTURNO)
+    # ============================================================
+    st.subheader("📍 Radar Geográfico de Oportunidades")
+    
     centro_lat = df['Latitude'].mean() if 'Latitude' in df.columns else -25.4542
     centro_lon = df['Longitude'].mean() if 'Longitude' in df.columns else -49.2854
     
-    mapa = folium.Map(location=[centro_lat, centro_lon], zoom_start=15, tiles="CartoDB positron")
-
+    m = folium.Map(location=[centro_lat, centro_lon], zoom_start=15, tiles="CartoDB dark_matter")
+    
     for _, row in df.iterrows():
-        if 'Latitude' in row and 'Longitude' in row and pd.notna(row['Latitude']) and pd.notna(row['Longitude']):
+        if pd.notna(row.get("Latitude")) and pd.notna(row.get("Longitude")):
             is_lona = str(row.get("Lona", "Não")).strip().lower() == "sim"
-            cor_marcador = "black" if is_lona else "blue"
-            icone_marcador = "eye-slash" if is_lona else "car"
-            
             folium.Marker(
                 [row["Latitude"], row["Longitude"]],
-                popup=f"<b>{row.get('Marca', '')} {row.get('Modelo_IA', '')}</b><br>{row.get('Rua_Imovel', '')}, nº {row.get('Numero_Imovel', '')}",
-                icon=folium.Icon(color=cor_marcador, icon=icone_marcador, prefix="fa")
-            ).add_to(mapa)
+                popup=f"<b>{row.get('Marca','')} {row.get('Modelo_IA','')}</b>",
+                icon=folium.Icon(color="black" if is_lona else "blue", icon="car", prefix="fa")
+            ).add_to(m)
             
-    folium_static(mapa, width=1200, height=450)
+    folium_static(m, width=1200, height=450)
 
-    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("---")
 
-    # --- MÓDULO 4: Repositório de Evidências Industrial ---
-    st.subheader("Painel Pericial de Evidências")
-    colunas_alvo = ["Foto_Visual", "Marca", "Modelo_IA", "Rua_Imovel", "Numero_Imovel", "Evidencia_Visual", "Lona"]
-    colunas_existentes = [c for c in colunas_alvo if c in df.columns]
-
+    # ============================================================
+    # 5. TABELA DE EVIDÊNCIAS (CORREÇÃO DE CONTRASTE E IMAGEM)
+    # ============================================================
+    st.subheader("📄 Relatório Pericial de Evidências Visuais")
+    
+    colunas_finais = ["Foto_Visual", "Marca", "Modelo_IA", "Rua_Imovel", "Numero_Imovel", "Evidencia_Visual", "Lona"]
+    cols_existentes = [c for c in colunas_finais if c in df.columns]
+    
     st.dataframe(
-        df[colunas_existentes],
+        df[cols_existentes],
         column_config={
-            "Foto_Visual": st.column_config.ImageColumn("Visual", width="small", help="Corte real isolado pelo algoritmo"),
+            "Foto_Visual": st.column_config.ImageColumn("Visual", width="small"),
+            "Evidencia_Visual": st.column_config.TextColumn("Laudo de Análise da IA", width="large"),
             "Marca": "Fabricante",
-            "Modelo_IA": "Modelo",
-            "Rua_Imovel": "Logradouro",
-            "Numero_Imovel": "Nº",
-            "Evidencia_Visual": "Laudo Técnico Estruturado (GPT-4o)",
-            "Lona": "Sob Lona?"
+            "Modelo_IA": "Modelo"
         },
         use_container_width=True,
         hide_index=True
     )
 else:
-    st.info("Aguardando sincronização do arquivo 'achados.csv' para inicializar a aplicação.")
+    st.warning("Aguardando upload do arquivo 'achados.csv' no GitHub...")

@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilização nativa de Web App Apple (Light Mode Premium)
+# CSS para emular uma interface nativa de aplicativo Apple (Light Mode)
 st.markdown("""
     <style>
     /* Fundo Canvas da Apple e tipografia limpa do sistema */
@@ -25,7 +25,7 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    /* Títulos e textos institucionais */
+    /* Títulos e subtítulos refinados */
     h1, h2, h3 {
         color: #1D1D1F !important;
         font-weight: 600 !important;
@@ -52,14 +52,14 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
 
-    /* Linhas divisórias elegantes */
+    /* Linhas divisórias elegantes e sutis */
     hr {
         border: 0;
         border-top: 1px solid #D2D2D7;
         margin: 24px 0;
     }
 
-    /* Customização do Grid de Dados */
+    /* Customização do Data Grid Industrial */
     .stDataFrame {
         border: 1px solid #E5E5EA;
         border-radius: 12px;
@@ -78,13 +78,13 @@ def carregar_dados_oficiais():
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
 
-        # Filtro Silencioso: Remove qualquer vestígio de erros da OpenAI
+        # Filtro Silencioso: Remove qualquer vestígio de erros de API
         if 'Modelo_IA' in df.columns:
             df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
         if 'Evidencia_Visual' in df.columns:
             df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
 
-        # Ajuste das Fotos: Isola o arquivo e aponta para a pasta local do GitHub
+        # Ajuste Cirúrgico das Fotos: Isola o nome do arquivo e aponta para a pasta fotos/
         if 'Arquivo_Foto' in df.columns:
             def ajustar_caminho_foto(caminho):
                 if pd.isna(caminho): return None
@@ -98,14 +98,14 @@ def carregar_dados_oficiais():
 df = carregar_dados_oficiais()
 
 # ============================================================
-# 3. RENDERIZAÇÃO DA INTERFACE DO APP
+# 3. RENDERIZAÇÃO DA INTERFACE DO WEB APP
 # ============================================================
 st.title("Urban Barn Find")
 st.caption("Mapeamento Geográfico Inteligente de Ativos Automotivos Raros · Curitiba, PR")
 st.markdown("<br>", unsafe_allow_html=True)
 
 if not df.empty:
-    # --- MÓDULO 1: Indicadores Principais ---
+    # --- MÓDULO 1: Indicadores Principais (Widgets iOS) ---
     total_varredura = 400
     confirmados = len(df)
     taxa_conversao = (confirmados / total_varredura) * 100
@@ -119,16 +119,16 @@ if not df.empty:
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- MÓDULO 2: Analítico Discreto (Estilo Widgets iOS) ---
-    st.subheader("Análise Analítica do Inventário")
+    # --- MÓDULO 2: Analítico Discreto (Perfumaria Estilo Apple) ---
+    st.subheader("Indicadores de Distribuição")
     col_g1, col_g2 = st.columns(2)
 
-    # Identidade de cores institucionais Apple
+    # Cores institucionais do ecossistema Apple
     cor_apple_blue = "#0071E3"
     cor_apple_gray = "#E5E5EA"
 
     with col_g1:
-        # Gráfico de Marcas Clean
+        # Gráfico de Marcas Clean (Sem linhas de grade, fundo transparente)
         df_marcas = df['Marca'].value_counts().reset_index()
         fig_marcas = px.bar(
             df_marcas, x='Marca', y='count',
@@ -137,7 +137,7 @@ if not df.empty:
             color_discrete_sequence=[cor_apple_blue]
         )
         fig_marcas.update_layout(
-            margin=dict(l=20, r=20, t=40, b=20), height=200,
+            margin=dict(l=20, r=20, t=40, b=20), height=180,
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
             font_family="-apple-system, BlinkMacSystemFont, sans-serif", font_color="#1D1D1F",
             xaxis_title=None, yaxis_title=None
@@ -147,7 +147,7 @@ if not df.empty:
         st.plotly_chart(fig_marcas, use_container_width=True, config={'displayModeBar': False})
 
     with col_g2:
-        # Gráfico Donut de Lonas Clean
+        # Gráfico Donut de Lonas Clean (Estilo Widget Tempo de Tela)
         fig_lona = px.pie(
             df, names='Lona',
             title="Status de Visibilidade (Veículos Ocultos)",
@@ -155,7 +155,7 @@ if not df.empty:
             color_discrete_sequence=[cor_apple_gray, cor_apple_blue]
         )
         fig_lona.update_layout(
-            margin=dict(l=20, r=20, t=40, b=20), height=200,
+            margin=dict(l=20, r=20, t=40, b=20), height=180,
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
             font_family="-apple-system, BlinkMacSystemFont, sans-serif", font_color="#1D1D1F"
         )
@@ -163,7 +163,7 @@ if not df.empty:
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- MÓDULO 3: Janela do Mapa (O Herói) ---
+    # --- MÓDULO 3: Janela do Mapa (O Herói da Tela) ---
     st.subheader("Visualização Espacial dos Ativos")
     centro_lat = df['Latitude'].mean() if 'Latitude' in df.columns else -25.4542
     centro_lon = df['Longitude'].mean() if 'Longitude' in df.columns else -49.2854
@@ -186,7 +186,7 @@ if not df.empty:
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- MÓDULO 4: Repositório de Evidências Periciais ---
+    # --- MÓDULO 4: Repositório de Evidências Industrial ---
     st.subheader("Painel Pericial de Evidências")
     colunas_alvo = ["Foto_Visual", "Marca", "Modelo_IA", "Rua_Imovel", "Numero_Imovel", "Evidencia_Visual", "Lona"]
     colunas_existentes = [c for c in colunas_alvo if c in df.columns]
@@ -206,4 +206,4 @@ if not df.empty:
         hide_index=True
     )
 else:
-    st.info("Aguardando sincronização do arquivo 'achados.csv' com dados reais para inicializar a aplicação.")
+    st.info("Aguardando sincronização do arquivo 'achados.csv' para inicializar a aplicação.")

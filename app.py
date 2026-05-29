@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ─── PREMIUM DARK LUXURY THEME (CLAUDE ORIGINAL) ──────────────────────────────
+# ─── PREMIUM DARK LUXURY THEME (COM RESPONSIVIDADE MOBILE) ────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap');
@@ -82,7 +82,7 @@ hr { border-color: #181830 !important; margin: 1.5rem 0 !important; }
     50% { box-shadow: 0 0 0 7px rgba(61,214,140,0); }
 }
 
-/* KPI Grid */
+/* KPI Grid DEFAULT (Desktop) */
 .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
 .kpi-card {
     background: #0D0D20;
@@ -133,7 +133,7 @@ hr { border-color: #181830 !important; margin: 1.5rem 0 !important; }
     border-radius: 4px; padding: 3px 9px;
 }
 
-/* Asset cards */
+/* Asset cards DEFAULT (Desktop) */
 .asset-card {
     background: #0D0D20;
     border: 1px solid #1A1A32;
@@ -143,81 +143,55 @@ hr { border-color: #181830 !important; margin: 1.5rem 0 !important; }
     transition: border-color .2s;
 }
 .asset-card:hover { border-color: #D4A853; }
-.asset-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px; font-weight: 700; color: #F0EDE8; margin-bottom: 4px;
-}
-.asset-loc {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; color: #5A5A80; margin-bottom: 14px;
-}
-.asset-evidence {
-    font-size: 13px; color: #8B879A; line-height: 1.7;
-    font-style: italic;
-    border-left: 2px solid #2A2010;
-    padding-left: 14px; margin-bottom: 14px;
-}
-.badge {
-    display: inline-block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px; letter-spacing: 0.08em;
-    padding: 4px 10px; border-radius: 100px; margin-right: 8px;
-}
+.asset-card-flex { display: flex; gap: 24px; align-items: flex-start; }
+.asset-img-container { flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; overflow: hidden; border: 1px solid #1A1A32; background: #07070F; display: flex; align-items: center; justify-content: center; }
+.asset-content { flex-grow: 1; width: 100%; }
+
+.asset-name { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #F0EDE8; margin-bottom: 4px; }
+.asset-loc { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5A5A80; margin-bottom: 14px; line-height: 1.4; }
+.asset-evidence { font-size: 13px; color: #8B879A; line-height: 1.7; font-style: italic; border-left: 2px solid #2A2010; padding-left: 14px; margin-bottom: 14px; }
+.badge { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 100px; margin-right: 8px; margin-bottom: 6px; }
 .b-decade { background: #14112A; color: #9B7FE8; border: 1px solid #221A40; }
 .b-brand  { background: #0C1A10; color: #3DD68C; border: 1px solid #183028; }
 .b-lona   { background: #1A0C0C; color: #EF6060; border: 1px solid #3A1818; }
 .b-ok     { background: #0C1A10; color: #3DD68C; border: 1px solid #183028; }
-.asset-footer {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px; color: #3A3A58; margin-top: 12px; padding-top: 12px;
-    border-top: 1px solid #131328;
-    display: flex; justify-content: space-between; align-items: center;
-}
+.asset-footer { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #3A3A58; margin-top: 12px; padding-top: 12px; border-top: 1px solid #131328; display: flex; justify-content: space-between; align-items: center; }
 .asset-link { color: #D4A853 !important; text-decoration: none; }
-.asset-link:hover { color: #F0C87A !important; }
+
+/* ============================================================
+   RESPONSIVIDADE MOBILE (TELAS MENORES QUE 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+    /* Empilha os KPIs em 1 coluna e reduz a fonte e paddings */
+    .kpi-row { grid-template-columns: 1fr !important; gap: 12px !important; }
+    .kpi-card { padding: 16px 20px !important; }
+    .kpi-value { font-size: 32px !important; }
+    .kpi-icon { font-size: 28px !important; right: 16px !important; }
+    
+    /* Ajusta o cabeçalho e Hero para celular */
+    .hero-title { font-size: 36px !important; }
+    .sec-head { flex-direction: column; gap: 8px; align-items: flex-start; }
+    
+    /* Empilha a foto em cima do laudo pericial (Catálogo) */
+    .asset-card-flex { flex-direction: column !important; gap: 16px !important; }
+    .asset-img-container { width: 100% !important; height: 200px !important; }
+    
+    /* Ajusta o rodapé do card para não quebrar no celular */
+    .asset-footer { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
 
 /* Sidebar */
-.sb-brand-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: #D4A853; margin-bottom: 6px;
-}
-.sb-brand-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px; font-weight: 900; color: #F0EDE8; line-height: 1.1;
-}
-.sb-brand-version {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px; color: #2A2A4A; margin-top: 4px;
-}
+.sb-brand-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #D4A853; margin-bottom: 6px; }
+.sb-brand-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #F0EDE8; line-height: 1.1; }
+.sb-brand-version { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #2A2A4A; margin-top: 4px; }
 .sb-divider { border-top: 1px solid #181830; margin: 18px 0; }
-.pitch-item {
-    background: #0D0D1C;
-    border-left: 2px solid #D4A853;
-    padding: 12px 14px 12px 16px;
-    margin-bottom: 10px;
-    border-radius: 0 8px 8px 0;
-}
-.pitch-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: #D4A853; margin-bottom: 5px;
-}
+.pitch-item { background: #0D0D1C; border-left: 2px solid #D4A853; padding: 12px 14px 12px 16px; margin-bottom: 10px; border-radius: 0 8px 8px 0; }
+.pitch-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #D4A853; margin-bottom: 5px; }
 .pitch-text { font-size: 12px; color: #6A6A8A; line-height: 1.6; }
 .pitch-text strong { color: #C8A84B; }
-.sb-stat {
-    background: #0D0D1C; border: 1px solid #181830;
-    border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
-}
-.sb-stat-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
-    color: #3A3A58; margin-bottom: 4px;
-}
-.sb-stat-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 24px; font-weight: 700; color: #D4A853;
-}
+.sb-stat { background: #0D0D1C; border: 1px solid #181830; border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; }
+.sb-stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #3A3A58; margin-bottom: 4px; }
+.sb-stat-value { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: #D4A853; }
 .sb-stat-sub { font-size: 11px; color: #4A4A6A; margin-top: 2px; }
 </style>
 """, unsafe_allow_html=True)
@@ -457,18 +431,18 @@ with col_c3:
     )
     st.plotly_chart(fig_funnel, use_container_width=True)
 
-# ─── MAPA TÁTICO COM IMAGEM BASE64 EMBUTIDA NO POPUP ──────────────────────────
+# ─── MAPA TÁTICO COM IMAGEM BASE64 EMBUTIDA NO POPUP E HEADER BLINDADO ──────────
 st.markdown("""
 <div class="sec-head">
     <div class="sec-title">Mapa Tático de Campo</div>
     <div class="sec-tag">Curitiba · Água Verde</div>
 </div>
-<p style="color:#5A5A80;font-size:14px;margin-bottom:16px;">
-    Clique nos marcadores para abrir o laudo pericial completo gerado pela IA e a imagem de campo.
-    <span style="color:#EF6060;">● Sob lona</span>
-      
-    <span style="color:#D4A853;">● Visível</span>
-</p>
+<div style="color:#5A5A80;font-size:14px;margin-bottom:16px;">
+    Clique nos marcadores para abrir o laudo pericial completo gerado pela IA e a imagem de campo.<br>
+    <span style="color:#EF6060; font-weight: bold;">● Sob lona</span> 
+    &nbsp;&nbsp;&nbsp; 
+    <span style="color:#D4A853; font-weight: bold;">● Visível</span>
+</div>
 """, unsafe_allow_html=True)
 
 mapa = folium.Map(location=[-25.4542, -49.2854], zoom_start=15, tiles="CartoDB dark_matter")
@@ -533,7 +507,7 @@ for _, row in df.iterrows():
 
 folium_static(mapa, width=1200, height=520)
 
-# ─── LAUDOS PERICIAIS COM FOTOS INJETADAS NO DESIGN DO CLAUDE ─────────────────
+# ─── LAUDOS PERICIAIS COM LAYOUT RESPONSIVO ───────────────────────────────────
 st.markdown("""
 <div class="sec-head" style="margin-top:40px;">
     <div class="sec-title">Laudos Periciais</div>
@@ -551,13 +525,12 @@ for _, row in df.iterrows():
     alerta_badge = f'<span class="badge b-lona">⚠ {row["Alerta_Fachada"]}</span>' if row["Alerta_Fachada"] != "Limpo" else '<span class="badge b-ok">✓ Fachada Limpa</span>'
     img_b64      = row["Foto_Base64"]
 
-    imagem_html = f'<div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; overflow: hidden; border: 1px solid #1A1A32; background: #07070F;"><img src="{img_b64}" style="width: 100%; height: 100%; object-fit: cover;"></div>' if img_b64 else '<div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #1A1A32; background: #0D0D20; font-family: monospace; font-size: 10px; color: #3A3A58;">FOTO INDISPONÍVEL</div>'
+    imagem_html = f'<div class="asset-img-container"><img src="{img_b64}" style="width: 100%; height: 100%; object-fit: cover;"></div>' if img_b64 else '<div class="asset-img-container" style="color: #3A3A58; font-family: monospace; font-size: 10px;">FOTO INDISPONÍVEL</div>'
 
-    # ALINHAMENTO À ESQUERDA PARA EVITAR QUE O MARKDOWN CRIE UM BLOCO DE CÓDIGO
     html_card = f"""
-<div class="asset-card" style="display: flex; gap: 24px; align-items: flex-start;">
+<div class="asset-card asset-card-flex">
 {imagem_html}
-<div style="flex-grow: 1;">
+<div class="asset-content">
 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
 <div>
 <div class="asset-name">{row['Marca']} {row['Modelo_IA']}</div>

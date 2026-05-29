@@ -222,7 +222,7 @@ hr { border-color: #181830 !important; margin: 1.5rem 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── MOTOR DE CONVERSÃO BINÁRIA DE FOTOS (BASE64) ────────────────────────────
+# ─── TRANFORMAÇÃO DE FOTO PARA BASE64 (SISTEMA INTEGRADO) ─────────────────────
 def carregar_imagem_base64(caminho_csv):
     if pd.isna(caminho_csv):
         return ""
@@ -237,33 +237,31 @@ def carregar_imagem_base64(caminho_csv):
             return ""
     return ""
 
-# ─── DATA LOADER COM FILTRAGEM DINÂMICA ───────────────────────────────────────
+# ─── DATA LOADER REFEITO PAR COMPATIBILIDADE DE INFRAESTRUTURA ────────────────
 def carregar_dados():
     csv_path = "achados.csv"
     if os.path.exists(csv_path):
         try:
             df = pd.read_csv(csv_path)
             
-            # FILTRO BRUTO ANTI-ERROS OPENAI
+            # FILTRO ANTI-ERROS OPENAI (Proteção de Interface)
             if 'Modelo_IA' in df.columns:
                 df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
             if 'Evidencia_Visual' in df.columns:
                 df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
             
-            # FILTRO DE SEGURANÇA: Remove marcas identificadas como 'Desconhecido' do inventário ativo
-            if 'Marca' in df.columns:
-                df = df[df['Marca'].astype(str).str.lower() != 'desconhecido']
-                
             if not df.empty:
-                # Injeta dados de fallback caso colunas do Colab venham faltando
+                # ADAPTAÇÃO GEOGRÁFICA DE VARIÁVEIS (Se o Colab não gerou, criamos dinamicamente)
+                if "Bairro" not in df.columns:
+                    df["Bairro"] = "Água Verde"
                 if "Decada" not in df.columns:
-                    df["Decada"] = "1970s"
+                    df["Decada"] = "Anos 70/80"
                 if "Alerta_Fachada" not in df.columns:
                     df["Alerta_Fachada"] = "Limpo"
                 if "Link_Google_Maps" not in df.columns:
-                    df["Link_Google_Maps"] = df.apply(lambda r: f"https://www.google.com/maps/search/?api=1&query={str(r.get('Rua_Imovel',''))}+{str(r.get('Numero_Imovel',''))}+Curitiba", axis=1)
+                    df["Link_Google_Maps"] = df.apply(lambda r: f"https://www.google.com/maps/search/?api=1&query={str(r.get('Latitude',''))},{str(r.get('Longitude',''))}", axis=1)
                 
-                # Mapeamento binário das imagens do GitHub
+                # Sincronização binária de fotos locais
                 if 'Arquivo_Foto' in df.columns:
                     df['Foto_Base64'] = df['Arquivo_Foto'].apply(carregar_imagem_base64)
                 else:
@@ -437,7 +435,10 @@ with col_c1:
     st.plotly_chart(fig_dec, use_container_width=True)
 
 with col_c2:
-    marca_counts = df["Marca"].value_counts()
+    # FILTRO INTERNO DO GRÁFICO: Remove 'Desconhecido' APENAS da visualização gráfica para ficar limpo
+    df_grafico_marcas = df[df["Marca"].astype(str).str.lower() != "desconhecido"]
+    marca_counts = df_grafico_marcas["Marca"].value_counts()
+    
     COLORS = ["#D4A853", "#9B7FE8", "#3DD68C", "#EF6060", "#60A5FA"]
     fig_pie = go.Figure(data=[go.Pie(
         labels=marca_counts.index, values=marca_counts.values, hole=0.62,
@@ -477,7 +478,7 @@ st.markdown("""
 <p style="color:#5A5A80;font-size:14px;margin-bottom:16px;">
     Clique nos marcadores para abrir o laudo pericial completo gerado pela IA e a imagem de campo.
     <span style="color:#EF6060;">● Sob lona</span>
-    &nbsp;&nbsp;
+      
     <span style="color:#D4A853;">● Visível</span>
 </p>
 """, unsafe_allow_html=True)
@@ -496,10 +497,11 @@ for _, row in df.iterrows():
     decada      = row["Decada"]
     img_b64     = row["Foto_Base64"]
 
+    lona_status = str(lona).strip().lower() == "sim"
     lona_badge = (
         '<span style="background:#1A0C0C;color:#EF6060;border:1px solid #3A1818;'
         'border-radius:100px;padding:3px 10px;font-size:10px;font-family:monospace;">● Sob Lona</span>'
-        if lona == "Sim" else
+        if lona_status else
         '<span style="background:#0C1A10;color:#3DD68C;border:1px solid #183028;'
         'border-radius:100px;padding:3px 10px;font-size:10px;font-family:monospace;">● Visível</span>'
     )
@@ -519,7 +521,7 @@ for _, row in df.iterrows():
         <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;
                     color:#F0EDE8;margin-bottom:4px;">{marca} {modelo}</div>
         <div style="font-family:monospace;font-size:11px;color:#5A5A80;margin-bottom:12px;">
-            {rua}, nº {num} &middot; {decada}
+            {rua}, nº {num} · {decada}
         </div>
         {lona_badge}
         <div style="border-top:1px solid #1C1C38;margin:12px 0;"></div>
@@ -539,7 +541,7 @@ for _, row in df.iterrows():
     folium.Marker(
         location=[lat, lon],
         popup=folium.Popup(html_popup, max_width=330),
-        icon=folium.Icon(color="red" if lona == "Sim" else "orange", icon="eye-slash" if lona == "Sim" else "star", prefix="fa")
+        icon=folium.Icon(color="red" if lona_status else "orange", icon="eye-slash" if lona_status else "star", prefix="fa")
     ).add_to(mapa)
 
 folium_static(mapa, width=1200, height=520)
@@ -557,18 +559,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 for _, row in df.iterrows():
-    lona_badge   = '<span class="badge b-lona">● SOB LONA</span>' if row["Lona"] == "Sim" else '<span class="badge b-ok">● VISÍVEL</span>'
+    is_lona = str(row["Lona"]).strip().lower() == "sim"
+    lona_badge   = '<span class="badge b-lona">● SOB LONA</span>' if is_lona else '<span class="badge b-ok">● VISÍVEL</span>'
     alerta_badge = f'<span class="badge b-lona">⚠ {row["Alerta_Fachada"]}</span>' if row["Alerta_Fachada"] != "Limpo" else '<span class="badge b-ok">✓ Fachada Limpa</span>'
     img_b64      = row["Foto_Base64"]
 
-    # Bloco visual da foto: Se houver a foto na pasta, ela renderiza à esquerda em proporção perfeita de cinema
+    # Bloco visual da foto injetada em Base64 no card original do Claude
     imagem_html = f"""
     <div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; overflow: hidden; border: 1px solid #1A1A32; background: #07070F;">
         <img src="{img_b64}" style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     """ if img_b64 else """
     <div style="flex-shrink: 0; width: 160px; height: 120px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #1A1A32; background: #0D0D20; font-family: monospace; font-size: 10px; color: #3A3A58;">
-        FOTO RESTRITA
+        FOTO INDISPONÍVEL
     </div>
     """
 

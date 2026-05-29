@@ -6,7 +6,7 @@ import plotly.express as px
 import os
 
 # ============================================================
-# 1. CONFIGURAÇÃO DE PÁGINA & TEMA ORIGINAL DARK PREMIUM
+# 1. CONFIGURAÇÃO DE PÁGINA & TEMA PREMIUM DARK GRAPHITE
 # ============================================================
 st.set_page_config(
     page_title="Urban Barn Find | V12 Tactical",
@@ -15,54 +15,60 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Injeção de CSS focada para NÃO quebrar a visibilidade das tabelas
+# CSS de Alta Costura para Dashboards Tech Modernos
 st.markdown("""
     <style>
-    /* Fundo Escuro Industrial */
-    .stApp { background-color: #0E1117; }
+    /* Fundo Grafite Profundo (Estilo Supabase/Vercel) */
+    .stApp { background-color: #0B0F17; color: #F8FAFC; }
     
-    /* Textos de Markdown e Parágrafos fora de tabelas em Branco */
-    .stMarkdown p, .stMarkdown span, caption { color: #FFFFFF !important; }
-    
-    /* Títulos em Azul Neon Hacker */
+    /* Títulos Elegantes e Minimalistas */
     h1, h2, h3, h4 { 
-        color: #00D1FF !important; 
-        font-family: 'Courier New', monospace !important;
-        font-weight: 700 !important; 
+        color: #F8FAFC !important; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-weight: 600 !important;
+        letter-spacing: -0.5px;
     }
     
-    /* Cartões das Métricas Originais */
+    /* Cartões de Métricas Minimalistas */
     div[data-testid="metric-container"] {
-        background-color: #1A1C24;
-        border: 1px solid #2D2F39;
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        background-color: #111827;
+        border: 1px solid #1F2937;
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
-    div[data-testid="stMetricValue"] { color: #00D1FF !important; font-size: 36px !important; }
-    div[data-testid="stMetricLabel"] { color: #86868B !important; font-size: 12px !important; }
+    div[data-testid="stMetricValue"] { color: #38BDF8 !important; font-size: 32px !important; font-weight: 700; }
+    div[data-testid="stMetricLabel"] { color: #9CA3AF !important; font-size: 12px !important; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    /* Ajuste de Linha Divisória */
-    hr { border-top: 1px solid #2D2F39 !important; }
+    /* Linha divisória sutil */
+    hr { border-top: 1px solid #1F2937 !important; margin: 28px 0; }
+    
+    /* Tabela Estilo Banco de Dados Premium */
+    .stDataFrame { 
+        border: 1px solid #1F2937; 
+        border-radius: 12px; 
+        background-color: #111827;
+        overflow: hidden; 
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 2. CARREGAMENTO E FILTRAGEM DE DADOS (FOCO EM FUNCIONAMENTO)
+# 2. MOTOR DE DADOS TRATADOS E FILTRADOS
 # ============================================================
 @st.cache_data
-def carregar_dados_blindados():
+def carregar_dados_periciais():
     csv_path = "achados.csv"
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         
-        # FILTRO ANTI-ERRO: Remove de forma invisível as linhas com falha 429 da API
+        # Limpeza bruta de logs de erro da API
         if 'Modelo_IA' in df.columns:
             df = df[~df['Modelo_IA'].astype(str).str.contains('Erro API', case=False, na=False)]
         if 'Evidencia_Visual' in df.columns:
             df = df[~df['Evidencia_Visual'].astype(str).str.contains('Error', case=False, na=False)]
             
-        # CORREÇÃO DO CAMINHO DAS FOTOS: Remove caminhos do Colab e padroniza para o GitHub
+        # Ajuste de caminhos locais para exibição das imagens
         if 'Arquivo_Foto' in df.columns:
             df['Foto_Visual'] = df['Arquivo_Foto'].apply(
                 lambda x: f"fotos/{str(x).split('/')[-1].strip()}" if pd.notna(x) else None
@@ -70,63 +76,82 @@ def carregar_dados_blindados():
         return df
     return pd.DataFrame()
 
-df = carregar_dados_blindados()
+df = carregar_dados_periciais()
 
 # ============================================================
-# 3. INTERFACE E GRÁFICOS (A PERFUMARIA DO CLAUDE DE VOLTA)
+# 3. INTERFACE E ANALYTICS DE ALTO PADRÃO
 # ============================================================
-st.title("📡 Urban Barn Find | V12 Tactical Dashboard")
-st.markdown("---")
+st.title("Urban Barn Find")
+st.caption("Intelligence Platform · Real Estate & Automotive Asset Scoping · Curitiba, PR")
+st.markdown("<br>", unsafe_allow_html=True)
 
 if not df.empty:
-    # 4 Cards de Métricas Originais
+    # Métricas Estilo KPI de Finanças
     total_varredura = 400
     confirmados = len(df)
     taxa_conversao = (confirmados / total_varredura) * 100
     total_lonas = int((df["Lona"].astype(str).str.lower() == "sim").sum()) if "Lona" in df.columns else 0
 
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("ALVOS VARRIDOS", f"{total_varredura}+")
-    m2.metric("CONFIRMADOS IA", f"{confirmados}")
-    m3.metric("VEÍCULOS SOB LONA", f"{total_lonas}")
-    m4.metric("RENDIMENTO EM CAMPO", f"{taxa_conversao:.1f}%")
+    m1.metric("Propriedades Mapeadas", f"{total_varredura}+")
+    m2.metric("Ativos Identificados", f"{confirmados}")
+    m3.metric("Cobertos por Lona", f"{total_lonas}")
+    m4.metric("Eficiência de Campo", f"{taxa_conversao:.1f}%")
 
     st.markdown("---")
 
-    # Bloco de Gráficos Originais (Lado a Lado)
-    st.subheader("📊 Volumetria e Estatísticas de Campo")
+    # MÓDULO ANÁLITICO REFEITO: Sumindo com o lixo visual do "Desconhecido"
+    st.subheader("Análise de Distribuição do Inventário")
     col_g1, col_g2 = st.columns(2)
 
+    # Cor sofisticada: Azul Elétrico Suave (#0EA5E9) e Grafite Escuro (#1F2937)
+    cor_principal = "#0EA5E9"
+    cor_secundaria = "#1F2937"
+
     with col_g1:
-        df_marcas = df['Marca'].value_counts().reset_index()
-        fig_marcas = px.bar(
-            df_marcas, x='Marca', y='count',
-            title="Modelos Detectados por Fabricante",
-            template="plotly_dark",
-            color_discrete_sequence=['#00D1FF']
-        )
-        fig_marcas.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=240)
-        fig_marcas.update_xaxes(showgrid=False)
-        fig_marcas.update_yaxes(showgrid=False)
-        st.plotly_chart(fig_marcas, use_container_width=True)
+        # Gráfico de Barras FILTRADO: Remove 'Desconhecido' para focar nas marcas reais achadas
+        if 'Marca' in df.columns:
+            df_filtrado_marcas = df[df['Marca'].astype(str).str.lower() != 'desconhecido']
+            df_marcas = df_filtrado_marcas['Marca'].value_counts().reset_index()
+            
+            fig_marcas = px.bar(
+                df_marcas, x='Marca', y='count',
+                title="Modelos Validados por Fabricante (Excluindo Omissões)",
+                template="plotly_dark",
+                color_discrete_sequence=[cor_principal]
+            )
+            fig_marcas.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                height=240, margin=dict(l=10, r=10, t=40, b=10),
+                xaxis_title=None, yaxis_title=None
+            )
+            fig_marcas.update_xaxes(showgrid=False)
+            fig_marcas.update_yaxes(showgrid=False)
+            st.plotly_chart(fig_marcas, use_container_width=True, config={'displayModeBar': False})
+        else:
+            st.info("Dados de marcas indisponíveis para volumetria.")
 
     with col_g2:
+        # Gráfico de Pizza/Donut Limpo e Focado
         fig_lona = px.pie(
             df, names='Lona',
-            title="Proporção: Veículos Ocultos (Lona)",
+            title="Acessibilidade Visual do Ativo (Lona)",
             template="plotly_dark",
-            hole=0.4,
-            color_discrete_sequence=['#2D2F39', '#00D1FF']
+            hole=0.6,
+            color_discrete_sequence=[cor_secundaria, cor_principal]
         )
-        fig_lona.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=240)
-        st.plotly_chart(fig_lona, use_container_width=True)
+        fig_lona.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+            height=240, margin=dict(l=10, r=10, t=40, b=10)
+        )
+        st.plotly_chart(fig_lona, use_container_width=True, config={'displayModeBar': False})
 
     st.markdown("---")
 
     # ============================================================
-    # 4. MAPA TÁTICO (MODO NOTURNO)
+    # 4. MAPA TÁTICO INTEGRADO (DARK MATTER)
     # ============================================================
-    st.subheader("📍 Radar Geográfico de Oportunidades")
+    st.subheader("📍 Disposição Geográfica dos Leads")
     
     centro_lat = df['Latitude'].mean() if 'Latitude' in df.columns else -25.4542
     centro_lon = df['Longitude'].mean() if 'Longitude' in df.columns else -49.2854
@@ -147,9 +172,9 @@ if not df.empty:
     st.markdown("---")
 
     # ============================================================
-    # 5. TABELA DE EVIDÊNCIAS (CORREÇÃO DE CONTRASTE E IMAGEM)
+    # 5. BANCO DE DADOS DE EVIDÊNCIAS
     # ============================================================
-    st.subheader("📄 Relatório Pericial de Evidências Visuais")
+    st.subheader("📄 Relatório Pericial Estruturado")
     
     colunas_finais = ["Foto_Visual", "Marca", "Modelo_IA", "Rua_Imovel", "Numero_Imovel", "Evidencia_Visual", "Lona"]
     cols_existentes = [c for c in colunas_finais if c in df.columns]
@@ -158,7 +183,7 @@ if not df.empty:
         df[cols_existentes],
         column_config={
             "Foto_Visual": st.column_config.ImageColumn("Visual", width="small"),
-            "Evidencia_Visual": st.column_config.TextColumn("Laudo de Análise da IA", width="large"),
+            "Evidencia_Visual": st.column_config.TextColumn("Laudo Pericial (OpenAI Vision)", width="large"),
             "Marca": "Fabricante",
             "Modelo_IA": "Modelo"
         },

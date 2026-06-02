@@ -453,7 +453,7 @@ for _, row in df.iterrows():
     modelo      = row["Modelo_IA"]
     evidencia   = row["Evidencia_Visual"]
     lona        = row["Lona"]
-    rua         = row["Rua_Imovel"]
+    rua = row.get("Rua_Imovel", "Mapeado via OSM")
     num         = row["Numero_Imovel"]
     link        = row["Link_Google_Maps"]
     decada      = row["Decada"]

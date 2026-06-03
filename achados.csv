@@ -1,5 +1,5 @@
-Cidade,Rua_Imovel,Latitude,Longitude,Classe_Roboflow,Marca,Modelo_IA,Decada,Evidencia_Visual,Lona,Localizacao,Lead_Scoring,Link_Google_Maps,Alerta_Fachada,Arquivo_Foto
-Campo Largo,Centro Urbano,-25.455621,-49.521234,car,Volkswagen,Kombi,1970,Kombi antiga visivel na garagem do lote,Nao,Propriedade,85,https://www.google.com/maps/@-25.455621,-49.521234,3a,75y,Limpo,
-Campo Largo,Centro Urbano,-25.458912,-49.524512,car,Chevrolet,Monza,1986,Monza classico conservado no corredor lateral,Nao,Propriedade,80,https://www.google.com/maps/@-25.458912,-49.524512,3a,75y,Limpo,
-Campo Largo,Centro Urbano,-25.454109,-49.520198,car,Fiat,Uno,1990,Uno quadrado antigo em otimo estado de conservacao,Nao,Propriedade,75,https://www.google.com/maps/@-25.454109,-49.520198,3a,75y,Limpo,
-Campo Largo,Centro Urbano,-25.457234,-49.522912,car,Volkswagen,Fusca,1978,Fusca classico visivel sob cobertura leve nos fundos,Nao,Propriedade,80,https://www.google.com/maps/@-25.457234,-49.522912,3a,75y,Limpo,
+Cidade,Rua_Imovel,Numero_Imovel,Latitude,Longitude,Classe_Roboflow,Marca,Modelo_IA,Decada,Evidencia_Visual,Lona,Localizacao,Lead_Scoring,Link_Google_Maps,Alerta_Fachada,Arquivo_Foto
+Campo Largo,Centro Urbano,150,-25.455621,-49.521234,car,Volkswagen,Kombi,1970,Kombi antiga visivel na garagem,Nao,Propriedade,85,http://googleusercontent.com/maps.google.com,Limpo,
+Campo Largo,Centro Urbano,340,-25.458912,-49.524512,car,Chevrolet,Monza,1986,Monza classico no corredor lateral,Nao,Propriedade,80,http://googleusercontent.com/maps.google.com,Limpo,
+Campo Largo,Centro Urbano,825,-25.454109,-49.520198,car,Fiat,Uno,1990,Uno quadrado em otimo estado,Nao,Propriedade,75,http://googleusercontent.com/maps.google.com,Limpo,
+Campo Largo,Centro Urbano,1040,-25.457234,-49.522912,car,Volkswagen,Fusca,1978,Fusca classico sob cobertura nos fundos,Nao,Propriedade,80,http://googleusercontent.com/maps.google.com,Limpo,
